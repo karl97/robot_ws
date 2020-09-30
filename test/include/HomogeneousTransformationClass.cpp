@@ -279,3 +279,45 @@ void Chain::printLinkPosesToTerminal()
 
     }
 }
+
+HomogeneousTransformation Chain::getLinkPose(int id)
+{
+    Joint* j = base->getChild();
+    Link *l = j->getChild();
+    //std::cout<<"base_link"<<std::endl;
+    HomogeneousTransformation T = base->getPoseOffsetFromParent();
+    HomogeneousTransformation Txx=T;
+    if(id==0)
+    {
+        return Txx;
+    }
+    int linkCounter=1;
+    int jointCounter=1;
+    int linkOrJoint=2;
+    double rotationOnJoint;
+    
+    while((j!=NULL)&&(l!=NULL))
+    {
+        if(linkOrJoint % 2 == 0)
+        {
+            //std::cout<<"Joint_"<<jointCounter<<std::endl;
+            jointCounter++;
+            l = j->getChild();
+            rotationOnJoint=j->getJointValue();
+        }
+        else
+        {
+            //std::cout<<"Link_"<<linkCounter<<std::endl;
+            j = l->getChild();
+            T.setTransformation(T.getRotTransformZ(rotationOnJoint));
+            Txx=Txx.applyTransformationOnTransformation(T).applyTransformationOnTransformation(l->getPoseOffsetFromParent());
+            if(linkCounter==id)
+            {
+                return Txx;
+            }
+            linkCounter++;
+        }
+        linkOrJoint++;
+
+    }
+}

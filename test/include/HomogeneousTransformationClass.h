@@ -105,6 +105,7 @@ public:
     void setBase(Link *b){base = b;};
     void printChainToTerminal();
     void printLinkPosesToTerminal();
+    HomogeneousTransformation getLinkPose(int id);
 };
 
 #endif
