@@ -67,16 +67,15 @@ void test_chain()
 
 void publish_tfs()
 {
-  
   HomogeneousTransformation T(Matrix4d::Identity());
   Vector3d aor(0,0,1);
   double a,b,c,d,e,f;
   a=0.5+0.05;
   b=0.3;
   c=0.2;
-  d=M_PI/2;
-  e=-M_PI/8;
-  f=-M_PI/8;
+  d=0;
+  e=0;
+  f=0;
   Vector3d va(a,0,0);
   Vector3d vb(b,0,0);
   Vector3d vc(c,0,0);

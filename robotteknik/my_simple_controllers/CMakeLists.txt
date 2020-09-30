@@ -12,7 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   kdl_parser
   roscpp
   visualization_msgs
-)
+  tf
+  )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -124,6 +125,7 @@ include_directories(
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
   src/state_controller.cpp
+  include/HomogeneousTransformationClass.cpp
 )
 
 ## Add cmake target dependencies of the library
