@@ -144,7 +144,7 @@ int main(int argc, char** argv){
   ros::init(argc, argv, "tf_publisher");
   ros::NodeHandle n;
   ros::Rate r(100);
-  tf::TransformBroadcaster broadcaster;
+  
 
   test_chain();
 

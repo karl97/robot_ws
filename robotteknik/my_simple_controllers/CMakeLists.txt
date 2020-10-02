@@ -3,9 +3,7 @@ project(my_simple_controllers)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -109,7 +107,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES my_simple_controllers
-  CATKIN_DEPENDS controller_interface kdl_parser roscpp visualization_msgs
+  CATKIN_DEPENDS controller_interface kdl_parser roscpp visualization_msgs tf
 #  DEPENDS system_lib
 )
 
@@ -129,7 +127,7 @@ add_library(${PROJECT_NAME}
   src/state_controller.cpp
   include/HomogeneousTransformationClass.cpp
 )
-
+target_link_libraries(${PROJECT_NAME}  ${catkin_LIBRARIES} )
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
