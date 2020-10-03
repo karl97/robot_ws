@@ -69,24 +69,25 @@ void StateController::update(const ros::Time& time, const ros::Duration& period)
   
   Chain chain;
   chain.setBase(&base_link);
-  //chain.getLinkPose(3).printTransformationToTerminal();
   
   tf::TransformBroadcaster broadcaster;
-  HomogeneousTransformation T0 = chain.getLinkPose(1);
-  HomogeneousTransformation T1 = chain.getLinkPose(2);
-  HomogeneousTransformation T2 = chain.getLinkPose(3);
- 
-  Vector4d qu0=T0.getQuaternion();
-  Vector4d qu1=T1.getQuaternion();
-  Vector4d qu2=T2.getQuaternion();
+  HomogeneousTransformation TB0 = chain.getLinkPose(1);
+  HomogeneousTransformation TB1 = chain.getLinkPose(2);
+  HomogeneousTransformation TB2 = chain.getLinkPose(3);
+   HomogeneousTransformation T0B(TB0.inverse().getTransformation());
+   HomogeneousTransformation T1B(TB1.inverse().getTransformation());
+   HomogeneousTransformation T01(T0B.applyTransformationOnTransformation(TB1).getTransformation());
+   HomogeneousTransformation T12(T1B.applyTransformationOnTransformation(TB2).getTransformation());
+  Vector4d qu0=TB0.getQuaternion();
+  Vector4d qu1=T01.getQuaternion();
+  Vector4d qu2=T12.getQuaternion();
 
-  Vector3d p0=T0.getTranslation();
-  Vector3d p1=T1.getTranslation();
-  Vector3d p2=T2.getTranslation();
+  Vector3d p0=TB0.getTranslation();
+  Vector3d p1=T01.getTranslation();
+  Vector3d p2=T12.getTranslation();
   broadcaster.sendTransform(tf::StampedTransform(tf::Transform(tf::Quaternion(qu0(1), qu0(2), qu0(3), qu0(0)), tf::Vector3(p0(0), p0(1), p0(2))), ros::Time::now(),"base_link", "L0"));
-  broadcaster.sendTransform(tf::StampedTransform(tf::Transform(tf::Quaternion(qu1(1), qu1(2), qu1(3), qu1(0)), tf::Vector3(p1(0), p1(1), p1(2))), ros::Time::now(),"base_link", "L1"));
-  broadcaster.sendTransform(tf::StampedTransform(tf::Transform(tf::Quaternion(qu2(1), qu2(2), qu2(3), qu2(0)), tf::Vector3(p2(0), p2(1), p2(2))), ros::Time::now(),"base_link", "L2"));
-  
+  broadcaster.sendTransform(tf::StampedTransform(tf::Transform(tf::Quaternion(qu1(1), qu1(2), qu1(3), qu1(0)), tf::Vector3(p1(0), p1(1), p1(2))), ros::Time::now(),"L0", "L1"));
+  broadcaster.sendTransform(tf::StampedTransform(tf::Transform(tf::Quaternion(qu2(1), qu2(2), qu2(3), qu2(0)), tf::Vector3(p2(0), p2(1), p2(2))), ros::Time::now(),"L1", "L2"));
 }
 
 bool StateController::init(hardware_interface::JointStateInterface* hw, 
