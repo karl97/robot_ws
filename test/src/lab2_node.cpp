@@ -9,27 +9,27 @@ void test_chain()
   HomogeneousTransformation T(Matrix4d::Identity());
   Vector3d aor(0,0,1);
   double a,b,c,d,e,f;
-  a=0.5+0.05;
-  b=0.3;
-  c=0.2;
-  d=M_PI/2;
-  e=-M_PI/8;
-  f=-M_PI/8;
+  a=1;
+  b=1;
+  c=1;
+  d=M_PI/2.0;
+  e=0;
+  f=0;
   Vector3d va(a,0,0);
   Vector3d vb(b,0,0);
   Vector3d vc(c,0,0);
   Link base_link;
   base_link.setPoseOffsetFromParent(Matrix4d::Identity());
   Link L0;
-  HomogeneousTransformation TL0(T.getRotTransformZ(M_PI/4.0));
+  HomogeneousTransformation TL0(T.getRotTransformZ(0));
   TL0.setTranslation(va);
   L0.setPoseOffsetFromParent(TL0.getTransformation());
   Link L1;
-  HomogeneousTransformation TL1(T.getRotTransformZ(-M_PI/8.0));
+  HomogeneousTransformation TL1(T.getRotTransformZ(0));
   TL1.setTranslation(vb);
   L1.setPoseOffsetFromParent(TL1.getTransformation());
   Link L2;
-  HomogeneousTransformation TL2(T.getRotTransformZ(-M_PI/8.0));
+  HomogeneousTransformation TL2(T.getRotTransformZ(0));
   TL2.setTranslation(vc);
   L2.setPoseOffsetFromParent(TL2.getTransformation());
   Joint q0;
@@ -62,6 +62,7 @@ void test_chain()
 
   Chain chain;
   chain.setBase(&base_link);
+  //chain.printChainToTerminal();
   chain.printLinkPosesToTerminal();
 }
 
@@ -151,6 +152,5 @@ int main(int argc, char** argv){
   while(n.ok()){
     publish_tfs();
     r.sleep();
-  
   }
 }

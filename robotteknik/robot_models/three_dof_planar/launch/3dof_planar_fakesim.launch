@@ -2,7 +2,7 @@
 <launch>
     
     <!-- load robot description from xacro file -->
-    <param name="robot_description" command="$(find xacro)/xacro $(find gbot_description)/urdf/3dof_planar.urdf.xacro"/>
+    <param name="robot_description" command="$(find xacro)/xacro $(find three_dof_planar)/urdf/3dof_planar.urdf.xacro"/>
 
     <!-- convert joint states to TF transforms for rviz, etc -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
@@ -10,5 +10,5 @@
     <node name="joint_state_publisher" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui"/>
     
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find three_dof_planar)/launch/sim.rviz" />
-
+    
 </launch>
