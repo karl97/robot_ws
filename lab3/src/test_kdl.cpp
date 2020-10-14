@@ -60,10 +60,10 @@ public:
         KDL::ChainJntToJacSolver jac_solver(chain);
         J.resize(chain.getNrOfJoints());
         jac_solver.JntToJac(joint_pos,J);
-        return J.data;;
+        return J.data;
     };
 
-    Eigen::Matrix<double,3,6> DLSInv(Eigen::Matrix< double, 6, Eigen::Dynamic > J , double k)
+    Eigen::Matrix<double,3,6> DLSInv(Eigen::Matrix< double, 6, 3 > J , double k)
     {
         Eigen::Matrix<double,3,6> Jt=J.transpose();
         Eigen::Matrix<double,6,6> JJtInv=(J*Jt+k*k*Eigen::Matrix<double,6,6>::Identity()).inverse();

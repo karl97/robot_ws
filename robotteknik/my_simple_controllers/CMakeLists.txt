@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   visualization_msgs
   tf
+  geometry_msgs
   )
 
 ## System dependencies are found with CMake's conventions
@@ -125,6 +126,7 @@ include_directories(
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
   src/state_controller.cpp
+  src/velocity_controller.cpp
   include/HomogeneousTransformationClass.cpp
 )
 target_link_libraries(${PROJECT_NAME}  ${catkin_LIBRARIES} )

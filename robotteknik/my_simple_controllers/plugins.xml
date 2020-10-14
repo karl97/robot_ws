@@ -8,5 +8,12 @@
       Simple forward kinematic controller that publishes end effector pose to TF
     </description>
   </class>
+  <class name="my_simple_controllers/VelocityController" 
+         type="my_simple_controllers::VelocityController" 
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+      Simple Velocity controller
+    </description>
+  </class>
   
 </library>
