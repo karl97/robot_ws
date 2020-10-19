@@ -10,9 +10,8 @@
 #include <kdl/chainjnttojacsolver.hpp>
 #include <sensor_msgs/JointState.h>
 #include <ctime>
-#include <cstdlib>
 #include <sensor_msgs/JointState.h>
-
+#include <cmath>
 
 class kdl_test
 {
@@ -128,39 +127,142 @@ public:
         return ps;
     }
 
-    geometry_msgs::Twist rectilinear_path_trap(ros::Publisher *pub,Eigen::Affine3d start,Eigen::Affine3d goal)
+
+    double q(double t,double tf, double qi ,double qf,double qspeed)
+    {   
+        double tc=(qi-qf+qspeed*tf)/qspeed;
+        double qacc=(qspeed*qspeed)/(qi-qf+qspeed*tf);
+        double val=std::abs(qf-qi)/tf;
+        if(val>=std::abs(qspeed))
+        {
+            std::cout<<"to small speed must be over..."<<val<<std::endl;
+            return 0;
+        }
+        if(std::abs(qspeed)>2*val)
+        {
+            std::cout<<"to large speed must be smaller than..."<<2*val<<std::endl;
+            return 0;
+        }
+        double qt=0;
+        if((0<=t)&&(t<=tc))
+        {
+            qt=qi+0.5*qacc*t*t;
+            //std::cout<<"1"<<std::endl;
+        }
+        if((tc<t)&&(t<=(tf-tc)))
+        {
+            qt=qi+qacc*tc*(t-0.5*tc);
+            //std::cout<<"2"<<std::endl;
+        }
+        if(((tf-tc)<t)&&(t<=tf))
+        {
+            qt=qf-0.5*qacc*(tf-t)*(tf-t);
+            //std::cout<<"3"<<std::endl;
+        }
+        //std::cout<<qt<<std::endl;
+        return qt;
+    }
+
+    double q2(double t,double tf, double qi ,double qf,double qacc)
+    {   
+        double tc=tf*0.5-0.5*sqrt((tf*tf*qacc-4*(qf-qi))/qacc);
+        double val=4*std::abs(qf-qi)/(tf*tf);
+        if(val>std::abs(qacc))
+        {
+            std::cout<<"to small acc..."<<std::endl;
+        }
+       
+        double qt=0;
+        if((0<=t)&&(t<=tc))
+        {
+            qt=qi+0.5*qacc*t*t;
+            std::cout<<"1"<<std::endl;
+        }
+        if((tc<t)&&(t<=(tf-tc)))
+        {
+            qt=qi+qacc*tc*(t-0.5*tc);
+            std::cout<<"2"<<std::endl;
+        }
+        if(((tf-tc)<t)&&(t<=tf))
+        {
+            qt=qf-0.5*qacc*(tf-t)*(tf-t);
+            std::cout<<"3"<<std::endl;
+        }
+        //std::cout<<qt<<std::endl;
+        return qt;
+    }
+
+    geometry_msgs::Twist rectilinear_path_trap(ros::Publisher *pub,Eigen::Affine3d start,Eigen::Affine3d goal,double pspeed,double qspeed)
     {
-        
         geometry_msgs::Twist t;
         Eigen::Matrix<double,3,1> pi=getTransl(start);
         Eigen::Matrix<double,3,1> pf=getTransl(goal);
         Eigen::Matrix<double,3,1> qi=getRPYs(start);
         Eigen::Matrix<double,3,1> qf=getRPYs(goal);
-        Eigen::Matrix<double,3,1> p0;
-        p0 = p(0,pi,pf);
         double L=(pf-pi).norm();
-        double dt=L/100;
-        double i=0;
-        while(ros::ok()&&i<100)
+        double L2=(qf-qi).norm();
+        double dt=0.01;
+        double curr_time=0;
+        double tf=1.0;
+        double trapT=0;
+        int numSamples=int(tf/dt)+1;
+        double trapSamples[numSamples];
+        double trapSamples2[numSamples];
+        for(int i=0;i<numSamples;i+=1)
+        {
+            if(i==numSamples-1)
+            {
+                curr_time=tf;
+            }
+            trapSamples[i]=q(curr_time,tf,0,L,pspeed);
+            trapSamples2[i]=q(curr_time,tf,0,L2,qspeed);
+            
+            //std::cout<<trapSamples[i]<<":"<<curr_time<<std::endl;
+            curr_time+=dt;
+        }
+        Eigen::Matrix<double,3,1> pvel;
+        Eigen::Matrix<double,3,1> pc;
+        Eigen::Matrix<double,3,1> p_prev=pi;
+
+        Eigen::Matrix<double,3,1> qvel;
+        Eigen::Matrix<double,3,1> qc;
+        Eigen::Matrix<double,3,1> q_prev=qi;
+
+        double start_time=ros::Time::now().toSec();
+        int i=0;
+        curr_time=0;
+        while((i<numSamples)&&ros::ok())
         {  
-            p0 = p(i,pi,pf);
-            i=i+dt;
-            t.linear.x=p0[0]/10;
-            t.linear.y=p0[1]/10;
-            t.linear.z=p0[2]/10;
-            t.angular.x=0;
-            t.angular.y=0;
-            t.angular.z=0;
-            pub->publish(t);
-            ros::Duration(dt).sleep();
+            if((ros::Time::now().toSec() - start_time >=curr_time)&&(i<numSamples))
+            {
+                
+                pc=p(trapSamples[i],pi,pf);
+                pvel=(pc-p_prev)/0.1;
+                p_prev=pc;
+
+                qc=p(trapSamples2[i],qi,qf);
+                qvel=(qc-q_prev)/0.1;
+                q_prev=qc;
+
+                t.linear.x=pvel[0];
+                t.linear.y=pvel[1];
+                t.linear.z=pvel[2];
+                t.angular.x=qvel[0];
+                t.angular.y=qvel[1];
+                t.angular.z=qvel[2];
+                pub->publish(t);
+                i+=1;
+                curr_time+=0.1;
+            }
             ros::spinOnce();
         }
         t.linear.x=0;
-        t.linear.y=-0.05;
+        t.linear.y=0;
         t.linear.z=0;
         t.angular.x=0;
         t.angular.y=0;
         t.angular.z=0;
+        pub->publish(t);
         return t;
     }
 
@@ -178,16 +280,30 @@ int main(int argc, char** argv)
     Eigen::Affine3d t_start=k.KDL_to_Eigen(k.solveForwardKinematics());
     Eigen::Affine3d t_goal;
     Eigen::Vector3d axis(0,0,1);
-    Eigen::AngleAxisd anax(0,axis);
-    t_goal=k.get_transform_from_values(anax,1,0,0.05);
-    geometry_msgs::Twist t=k.rectilinear_path_trap(&pub,t_start,t_goal);
-    while(ros::ok())
+    Eigen::AngleAxisd anax(-M_PI/2.0,axis);
+    Eigen::AngleAxisd anax2(M_PI/2.0,axis);
+    Eigen::AngleAxisd anax3(0.0,axis);
+    t_goal=k.get_transform_from_values(anax,0.3,0.3,0.05);
+    k.rectilinear_path_trap(&pub,t_start,t_goal,0.9,1.6);
+    std::cout<<k.solveForwardKinematics()<<std::endl;
+    ros::Duration(1).sleep();
+
+    t_start=k.KDL_to_Eigen(k.solveForwardKinematics());
+    t_goal=k.get_transform_from_values(anax2,0.0,1.0,0.05);
+    k.rectilinear_path_trap(&pub,t_start,t_goal,0.9,3.2);
+    std::cout<<k.solveForwardKinematics()<<std::endl;
+    ros::Duration(1).sleep();
+
+    t_start=k.KDL_to_Eigen(k.solveForwardKinematics());
+    t_goal=k.get_transform_from_values(anax3,1.0,0.0,0.05);
+    k.rectilinear_path_trap(&pub,t_start,t_goal,1.5,3.0); 
+    std::cout<<k.solveForwardKinematics()<<std::endl;
+    
+    /*while(ros::ok())
     {  
-        //std::cout<<k.solveForwardKinematics()<<std::endl;
-        pub.publish(t);
         ros::Duration(1).sleep();
         ros::spinOnce();
-    }
+    }*/
     
     return 0;
 }
