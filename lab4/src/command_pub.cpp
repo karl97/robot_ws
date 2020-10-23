@@ -12,6 +12,13 @@
 #include <ctime>
 #include <sensor_msgs/JointState.h>
 #include <cmath>
+#include <iostream>
+
+std::ofstream myfile;
+const char *filename=NULL;
+std::ofstream myfile2;
+const char *filename2=NULL;
+
 
 class kdl_test
 {
@@ -127,7 +134,6 @@ public:
         return ps;
     }
 
-
     double q(double t,double tf, double qi ,double qf,double qspeed)
     {   
         double tc=(qi-qf+qspeed*tf)/qspeed;
@@ -235,7 +241,6 @@ public:
         {  
             if((ros::Time::now().toSec() - start_time >=curr_time)&&(i<numSamples))
             {
-                
                 pc=p(trapSamples[i],pi,pf);
                 pvel=(pc-p_prev)/0.1;
                 p_prev=pc;
@@ -243,6 +248,22 @@ public:
                 qc=p(trapSamples2[i],qi,qf);
                 qvel=(qc-q_prev)/0.1;
                 q_prev=qc;
+                Eigen::Affine3d realT = KDL_to_Eigen(solveForwardKinematics());
+                Eigen::Matrix<double,3,1> realTransl = realT.translation();
+                Eigen::Matrix<double,3,1> realRot = getRPYs(realT);
+
+                Eigen::Matrix<double,3,1> diffTransl = realTransl-pc;
+                Eigen::Matrix<double,3,1> diffRot = realRot - qc;
+
+                std::ostringstream ss;
+                ss << diffTransl.norm();
+                std::string s(ss.str());
+                myfile << s <<",";
+
+                std::ostringstream ss2;
+                ss2 << diffRot.norm();
+                std::string s2(ss2.str());
+                myfile2 << s2 <<",";
 
                 t.linear.x=pvel[0];
                 t.linear.y=pvel[1];
@@ -270,6 +291,11 @@ public:
 
 int main(int argc, char** argv)
 {
+
+    filename=argv[1];
+    myfile.open (filename);
+    filename2=argv[2];
+    myfile2.open (filename2);
     ros::init(argc, argv, "command_publiher");
     ros::NodeHandle n;
     ros::Rate r(100);   
@@ -304,6 +330,7 @@ int main(int argc, char** argv)
         ros::Duration(1).sleep();
         ros::spinOnce();
     }*/
-    
+    myfile.close();
+    myfile2.close();
     return 0;
 }

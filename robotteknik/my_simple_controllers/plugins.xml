@@ -15,5 +15,12 @@
       Simple Velocity controller
     </description>
   </class>
+  <class name="my_simple_controllers/AdmittanceController" 
+         type="my_simple_controllers::AdmittanceController" 
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+      Simple Admittance controller
+    </description>
+  </class>
   
 </library>

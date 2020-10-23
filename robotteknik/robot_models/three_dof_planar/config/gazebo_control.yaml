@@ -12,6 +12,13 @@ my_velocity_controller:
         three_dof_planar_joint2: { p: 10.0, d: 2.5, i: 0.1, i_clamp: 1 }
         three_dof_planar_joint3: { p: 10.0, d: 2.5, i: 0.1, i_clamp: 1 }
 
+my_admittance_controller:
+    type: my_simple_controllers/AdmittanceController
+    gains:
+        three_dof_planar_joint1: { p: 10.0, d: 2.5, i: 0.1, i_clamp: 1 }
+        three_dof_planar_joint2: { p: 10.0, d: 2.5, i: 0.1, i_clamp: 1 }
+        three_dof_planar_joint3: { p: 10.0, d: 2.5, i: 0.1, i_clamp: 1 }
+
 position_joint_trajectory_controller:
     type: velocity_controllers/JointTrajectoryController
     joints:

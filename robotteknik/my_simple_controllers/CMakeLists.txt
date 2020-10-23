@@ -127,6 +127,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/state_controller.cpp
   src/velocity_controller.cpp
+  src/admittance_controller.cpp
   include/HomogeneousTransformationClass.cpp
 )
 target_link_libraries(${PROJECT_NAME}  ${catkin_LIBRARIES} )
